@@ -265,3 +265,38 @@
                               AND y.name <> x.name)
 
 --
+
+-- Tutorial 5: SUM and COUNT
+  -- Exercise 5.1: Total world population
+  SELECT SUM(population) FROM world
+
+  -- Exercise 5.2: List of continents
+  SELECT DISTINCT(continent) FROM world
+
+  -- Exercise 5.3: GDP of Africa
+  SELECT SUM(gdp) FROM world
+  WHERE continent = 'AFRICA'
+
+  -- Exercise 5.4: Count the big countries
+  SELECT COUNT(name) FROM world
+  WHERE area >= 1000000
+
+  -- Exercise 5.5: Baltic states population
+  SELECT SUM(population) FROM world
+  WHERE name IN ('Estonia', 'Latvia', 'Lithuania')
+
+  -- Exercise 5.6: Counting the countries of each continent
+  SELECT continent, COUNT(name) FROM world
+  GROUP BY continent
+
+  -- Exercise 5.7: Counting big countries in each continent
+  SELECT continent, COUNT(name) FROM world
+  WHERE population > 10000000
+  GROUP BY continent
+
+  -- Exercise 5.8: Counting big continents
+  SELECT continent FROM world
+  GROUP BY continent
+  HAVING SUM(population) > 100000000
+
+--
