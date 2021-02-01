@@ -358,6 +358,7 @@
   JOIN goal
     ON id = matchid
   GROUP BY stadium
+
   -- Exercise 6.11: JOIN and UEFA EURO 2012[Harder Questions]
   SELECT matchid, mdate, COUNT(player) FROM goal
   JOIN game
@@ -373,6 +374,7 @@
   WHERE (team1 = 'GER' OR team2 = 'GER')
     AND teamid = 'GER'
   GROUP BY matchid, mdate
+
   -- Exercise 6.13: JOIN and UEFA EURO 2012[Harder Questions]
   SELECT mdate,
     team1, SUM(CASE WHEN teamid = team1 THEN 1 ELSE 0 END) score1,
@@ -380,5 +382,123 @@
   LEFT JOIN goal
     ON matchid = id
   GROUP BY mdate, matchid, team1, team2
+
+--
+
+-- Tutorial 7: More JOIN
+  -- Exercise 7.1: 1962 movies
+  SELECT id, title FROM movie
+  WHERE yr = 1962
+
+  -- Exercise 7.2: When was Citizen Kane released?
+  SELECT yr FROM movie
+  WHERE title = 'Citizen Kane'
+
+  -- Exercise 7.3: Star Trek movies
+  SELECT id, title, yr FROM movie
+  WHERE title LIKE 'Star Trek%'
+  ORDER BY yr
+
+  -- Exercise 7.4: id for actor Glenn Close
+  SELECT id FROM actor
+  WHERE name = 'Glenn Close'
+
+  -- Exercise 7.5: id for Casablanca
+  SELECT id FROM movie
+  WHERE title = 'Casablanca'
+
+  -- Exercise 7.6: Cast list for Casablanca
+  SELECT name FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE title = 'Casablanca'
+
+  -- Exercise 7.7: Alien cast list
+  SELECT name FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE title = 'Alien'
+
+  -- Exercise 7.8: Harrison Ford movies
+  SELECT title FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE name = 'Harrison Ford'
+
+  -- Exercise 7.9: Harrison Ford as a supporting actor
+  SELECT title FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE name = 'Harrison Ford'
+    AND ord != 1
+
+  -- Exercise 7.10: Lead actors in 1962 movies
+  SELECT title, name FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE yr = 1962
+    AND ord = 1
+
+  -- Exercise 7.11: Busy years for Rock Hudson[Harder Questions]
+  SELECT yr, COUNT(title) FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE name = 'Rock Hudson'
+  GROUP BY yr
+  HAVING COUNT(title) > 2
+
+  -- Exercise 7.12: Lead actor in Julie Andrews movies[Harder Questions]
+  SELECT title, name FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE movie.id IN
+    (SELECT movieid FROM casting
+    WHERE actorid IN
+      (SELECT actor.id FROM actor
+      WHERE name = 'Julie Andrews'))
+  AND ord = 1
+
+  -- Exercise 7.13: Actors with 15 leading roles[Harder Questions]
+  SELECT name FROM actor
+  JOIN casting
+    ON id = actorid
+  WHERE ord = 1
+  GROUP BY name
+  HAVING COUNT(name) >= 15
+
+  -- Exercise 7.14: 1978 movies[Harder Questions]
+  Select title, COUNT(actorid) AS num_actors FROM movie
+  JOIN casting
+    ON id = movieid
+  WHERE yr = 1978
+  GROUP BY title
+  ORDER BY num_actors DESC, title
+
+  -- Exercise 7.15: Art Garfunkel[Harder Questions]
+  SELECT name FROM movie
+  JOIN casting
+    ON movie.id = movieid
+  JOIN actor
+    ON actorid = actor.id
+  WHERE movie.id IN
+    (SELECT movieid FROM casting
+    WHERE actorid IN
+      (SELECT actor.id FROM actor
+      WHERE name = 'Art Garfunkel'))
+  AND name != 'Art Garfunkel'
 
 --
