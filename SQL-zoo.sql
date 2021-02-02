@@ -563,62 +563,60 @@
 
 --
 
--- Tutorial 8: Using Null
-  -- Exercise 8.1: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT teacher.name FROM teacher
-  LEFT JOIN dept
-    ON teacher.dept = dept.id
-  WHERE dept.name IS NULL
+-- Tutorial 8+: NSS Tutorial
+  -- Exercise 8+.1: Check out one row
+  SELECT A_STRONGLY_AGREE FROM nss
+  WHERE question = 'Q01'
+    AND institution = 'Edinburgh Napier University'
+    AND subject = '(8) Computer Science'
 
-  -- Exercise 8.2: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT teacher.name, dept.name FROM teacher
-  INNER JOIN dept
-    ON teacher.dept = dept.id
+  -- Exercise 8+.2: Calculate how many agree or strongly agree
+  SELECT institution, subject FROM nss
+  WHERE question = 'Q15'
+    AND score >= 100
 
-  -- Exercise 8.3: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT teacher.name, dept.name
-  FROM teacher
-  LEFT JOIN dept
-    ON teacher.dept = dept.id
+  -- Exercise 8+.3: Unhappy Computer Students
+  SELECT institution, score FROM nss
+  WHERE question = 'Q15'
+    AND score < 50
+    AND subject='(8) Computer Science'
 
-  -- Exercise 8.4: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT teacher.name, dept.name
-  FROM teacher
-  RIGHT JOIN dept
-    ON teacher.dept = dept.id
+  -- Exercise 8+.4: More Computing or Creative Students?
+  SELECT subject, SUM(response) FROM nss
+  WHERE question = 'Q22'
+    AND (subject = '(8) Computer Science'
+    OR subject = '(H) Creative Arts and Design')
+  GROUP BY subject
 
-  -- Exercise 8.5: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT name, COALESCE(mobile, '07986 444 2266') AS mobile FROM teacher
+  -- Exercise 8+.5: Strongly Agree Numbers
+  SELECT subject, SUM(response*A_STRONGLY_AGREE/100) FROM nss
+  WHERE question = 'Q22'
+    AND (subject = '(8) Computer Science'
+    OR subject = '(H) Creative Arts and Design')
+  GROUP BY subject
 
-  -- Exercise 8.6: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT teacher.name, COALESCE(dept.name, 'None')
-  FROM teacher
-  LEFT JOIN dept
-    ON teacher.dept = dept.id
+  -- Exercise 8+.6: Strongly Agree, Percentage
+  SELECT subject, ROUND(SUM(response*A_STRONGLY_AGREE/100)/SUM(response)*100) FROM nss
+  WHERE question = 'Q22'
+    AND (subject = '(8) Computer Science'
+    OR subject = '(H) Creative Arts and Design')
+  GROUP BY subject
 
-  -- Exercise 8.7: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT COUNT(name), COUNT(mobile) FROM teacher
+  -- Exercise 8+.7: Scores for Institutions in Manchester
+  SELECT institution, ROUND(SUM(response*score/100)/SUM(response)*100) FROM nss
+  WHERE question = 'Q22'
+    AND institution LIKE '%Manchester%'
+  GROUP BY institution
 
-  -- Exercise 8.8: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT dept.name, COUNT(teacher.name)
-  FROM teacher
-  RIGHT JOIN dept
-    ON teacher.dept = dept.id
-  GROUP BY dept.name
-
-  -- Exercise 8.9: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT name, CASE WHEN dept = 1 THEN 'Sci'
-                    WHEN dept = 2 THEN 'Sci'
-                    ELSE 'Art'
-                    END
-  FROM teacher
-
-  -- Exercise 8.10: NULL, INNER JOIN, LEFT JOIN, RIGHT JOIN
-  SELECT name, CASE WHEN dept = 1 THEN 'Sci'
-                    WHEN dept = 2 THEN 'Sci'
-                    WHEN dept = 3 THEN 'Art'
-                    ELSE 'None'
-                    END
-  FROM teacher
+  -- Exercise 8+.8: Number of Computing Students in Manchester
+  SELECT institution, sum(sample),
+    (SELECT sample FROM nss y
+     WHERE subject='(8) Computer Science'
+       AND x.institution = y.institution
+       AND question='Q01') AS comp
+  FROM nss x
+  WHERE question='Q01'
+    AND (institution LIKE '%Manchester%')
+  GROUP BY institution
 
 --
