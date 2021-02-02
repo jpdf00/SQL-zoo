@@ -668,3 +668,126 @@
   GROUP BY party
 
 --
+
+-- Tutorial 9+: Window LAG
+  -- Exercise 9+.1: Introducing the covid table
+  SELECT name, DAY(whn), confirmed, deaths, recovered FROM covid
+  WHERE name = 'Spain'
+    AND MONTH(whn) = 3
+  ORDER BY whn
+
+  -- Exercise 9+.2: Introducing the LAG function
+  SELECT name, DAY(whn), confirmed,
+    LAG(confirmed, 1) OVER (PARTITION BY name ORDER BY whn) AS dbf
+  FROM covid
+  WHERE name = 'Italy'
+    AND MONTH(whn) = 3
+  ORDER BY whn
+
+  -- Exercise 9+.3: Number of new cases
+  SELECT name, DAY(whn),
+    confirmed - LAG(confirmed, 1) OVER (PARTITION BY name ORDER BY whn) AS new FROM covid
+  WHERE name = 'Italy'
+    AND MONTH(whn) = 3
+  ORDER BY whn
+
+  -- Exercise 9+.4: Weekly changes
+  SELECT name, DATE_FORMAT(whn,'%Y-%m-%d'),
+    confirmed - LAG(confirmed, 1) OVER (PARTITION BY name ORDER BY whn) AS new
+  FROM covid
+  WHERE name = 'Italy'
+    AND WEEKDAY(whn) = 0
+  ORDER BY whn
+
+  -- Exercise 9+.5: LAG using a JOIN
+  SELECT tw.name, DATE_FORMAT(tw.whn,'%Y-%m-%d'), tw.confirmed - lw.confirmed FROM covid tw
+  LEFT JOIN covid lw ON
+    DATE_ADD(lw.whn, INTERVAL 1 WEEK) = tw.whn
+    AND tw.name = lw.name
+  WHERE tw.name = 'Italy'
+  AND WEEKDAY(tw.whn) = 0.
+  ORDER BY tw.whn
+
+  -- Exercise 9+.6: RANK()
+  SELECT name, confirmed,
+    RANK() OVER (ORDER BY confirmed DESC) rc,
+    deaths,
+    RANK() OVER (ORDER BY deaths DESC) rc
+  FROM covid
+  WHERE whn = '2020-04-20'
+  ORDER BY confirmed DESC
+
+  -- Exercise 9+.7: Infection rate
+  SELECT world.name,
+    ROUND(100000*confirmed/population, 0),
+    RANK() OVER (ORDER BY confirmed/population ASC) rc
+  FROM covid JOIN world ON covid.name = world.name
+  WHERE whn = '2020-04-20'
+    AND population > 10000000
+  ORDER BY population DESC
+
+
+--
+
+-- Tutorial 9: Self JOIN
+  -- Exercise 9.1:
+  SELECT COUNT(*) FROM stops
+
+  -- Exercise 9.2:
+  SELECT id FROM stops
+  WHERE name = 'Craiglockhart'
+
+  -- Exercise 9.3:
+  SELECT id, name FROM stops
+  JOIN route
+    ON id = stop
+  WHERE num = '4'
+    AND company = 'LTR'
+
+  -- Exercise 9.4:
+  SELECT company, num, COUNT(*)
+  FROM route WHERE stop=149 OR stop=53
+  GROUP BY company, num
+  HAVING COUNT(*) = 2
+
+  -- Exercise 9.5:
+  SELECT a.company, a.num, a.stop, b.stop
+  FROM route a JOIN route b ON
+    (a.company=b.company AND a.num=b.num)
+  WHERE a.stop = 53
+    AND b.stop = 149
+
+  -- Exercise 9.6:
+  SELECT a.company, a.num, stopa.name, stopb.name
+  FROM route a JOIN route b ON
+    (a.company=b.company AND a.num=b.num)
+    JOIN stops stopa ON (a.stop=stopa.id)
+    JOIN stops stopb ON (b.stop=stopb.id)
+  WHERE stopa.name='Craiglockhart'
+    AND stopb.name = 'London Road'
+
+  -- Exercise 9.7:
+  SELECT DISTINCT a.company, a.num
+  FROM route a JOIN route b ON
+    (a.company=b.company AND a.num=b.num)
+  WHERE a.stop = 115
+    AND b.stop = 137
+
+  -- Exercise 9.8:
+  SELECT a.company, a.num
+  FROM route a JOIN route b ON
+    (a.company=b.company AND a.num=b.num)
+    JOIN stops stopa ON (a.stop=stopa.id)
+    JOIN stops stopb ON (b.stop=stopb.id)
+  WHERE stopa.name='Craiglockhart'
+    AND stopb.name = 'Tollcross'
+
+  -- Exercise 9.9:
+  SELECT stopb.name, a.company, a.num
+  FROM route a JOIN route b ON
+    (a.company = b.company AND a.num = b.num)
+    JOIN stops stopa ON (a.stop = stopa.id)
+    JOIN stops stopb ON (b.stop = stopb.id)
+  WHERE stopa.name = 'Craiglockhart'
+
+--
