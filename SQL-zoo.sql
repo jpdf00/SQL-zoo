@@ -611,12 +611,60 @@
   -- Exercise 8+.8: Number of Computing Students in Manchester
   SELECT institution, sum(sample),
     (SELECT sample FROM nss y
-     WHERE subject='(8) Computer Science'
+     WHERE subject = '(8) Computer Science'
        AND x.institution = y.institution
-       AND question='Q01') AS comp
+       AND question = 'Q01') AS comp
   FROM nss x
-  WHERE question='Q01'
+  WHERE question = 'Q01'
     AND (institution LIKE '%Manchester%')
   GROUP BY institution
+
+--
+
+-- Tutorial 9-: Window functions
+  -- Exercise 9-.1: Warming up
+  SELECT lastName, party, votes FROM ge
+  WHERE constituency = 'S14000024' AND yr = 2017
+  ORDER BY votes DESC
+
+  -- Exercise 9-.2: Who won?
+  SELECT party, votes,
+    RANK() OVER (ORDER BY votes DESC) as posn
+  FROM ge
+  WHERE constituency = 'S14000024' AND yr = 2017
+  ORDER BY party
+
+  -- Exercise 9-.3: PARTITION BY
+  SELECT yr, party, votes,
+    RANK() OVER (PARTITION BY yr ORDER BY votes DESC) as posn
+  FROM ge
+  WHERE constituency = 'S14000021'
+  ORDER BY party,yr
+
+  -- Exercise 9-.4: Edinburgh Constituency
+  SELECT constituency, party, votes,
+    RANK() OVER (PARTITION BY constituency ORDER BY votes DESC) as posn
+  FROM ge
+  WHERE constituency BETWEEN 'S14000021' AND 'S14000026'
+    AND yr  = 2017
+  ORDER BY posn, constituency
+
+  -- Exercise 9-.5: Winners Only
+  SELECT constituency, party FROM ge x
+  WHERE constituency BETWEEN 'S14000021' AND 'S14000026'
+    AND yr  = 2017
+    AND votes >= ALL(SELECT votes FROM ge y
+                     WHERE x.constituency = y.constituency
+                       AND y.yr = 2017)
+  ORDER BY constituency, votes DESC
+
+  -- Exercise 9-.6: Scottish seats
+  SELECT party, COUNT(*) FROM ge x
+  WHERE constituency LIKE 'S%'
+    AND yr  = 2017
+    AND votes >= ALL(SELECT votes FROM ge y
+                     WHERE x.constituency = y.constituency
+                       AND y.yr = 2017)
+  GROUP BY party
 
 --
